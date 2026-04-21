@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>로또 결과</title>
+<style>
+    body { text-align: center; }
+    .result-msg { color: red; font-weight: bold; }
+</style>
+</head>
+<body>
+    <h1>로또 결과</h1>
+    <hr>
+    <h2 class="result-msg" th:text="${lottoVO.result}">결과 메시지</h2>
+    <img th:src="@{/images/{img}(img=${lottoVO.imgName})}" width="250">
+    <br><br>
+    <div th:if="${lottoVO.imgName == 'rain.png'}">
+        <a href="/lottoForm.html">재시도....</a>
+    </div>
+</body>
+</html>
