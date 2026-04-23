@@ -19,7 +19,6 @@ public class StepController {
 		System.out.println(vo.getName());
 		System.out.println(vo.getPhoneNumber());
 		System.out.println(vo.getAge());
-		ModelAndView mav = new ModelAndView();
 		return  "stepOutput";
 	}
 }
