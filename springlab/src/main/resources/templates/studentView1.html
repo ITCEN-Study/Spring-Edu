@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title th:text="${title != null ? title : 'Student View'}">Student View</title>
+<style>
+    body { font-family: sans-serif; margin: 40px; }
+    h2 { color: #2c3e50; }
+    table { border-collapse: collapse; width: 400px; margin-top: 20px; }
+    th, td { border: 1px solid #bdc3c7; padding: 10px; text-align: left; }
+    th { background-color: #ecf0f1; }
+    .msg { font-size: 1.2em; color: #2980b9; margin-top: 20px; }
+    a { display: inline-block; margin-top: 20px; color: #3498db; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    #insertForm { margin-top: 20px; padding: 20px; border: 1px solid #ccc; width: 300px; }
+</style>
+<script th:if="${insertFailed == true}">
+    window.onload = function() {
+        alert("학생 정보 등록에 실패했습니다");
+    };
+</script>
+<script th:unless="${insertFailed == true}">
+    function toggleForm() {
+        var form = document.getElementById('insertForm');
+        form.style.display = form.style.display === 'block' ? 'none' : 'block';
+    }
+</script>
+</head>
+<body>
+
+    <div th:if="${deleteFailed == true}">
+        <h2>학생 정보 삭제를 실패했습니다</h2>
+        <a href="/test1">전체 학생 리스트</a>
+    </div>
+
+    <div id="mainContent" th:unless="${deleteFailed == true or insertFailed == true}">
+        <h2 th:if="${title != null}" th:text="${title}">제목</h2>
+        <hr th:if="${title != null}">
+
+        <div th:if="${list != null}">
+            <table th:if="${not #lists.isEmpty(list)}">
+                <thead>
+                    <tr>
+                        <th>이름</th>
+                        <th>점수</th>
+                        <th th:if="${title == '전체 학생 리스트'}">삭제</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="student : ${list}">
+                        <td th:text="${student.name}">이름</td>
+                        <td th:text="${student.score}">점수</td>
+                        <td style="text-align: center;" th:if="${title == '전체 학생 리스트'}">
+                            <a th:href="@{/delete(name=${student.name})}">
+                                <img src="/images/delete.png" width="20" height="20" alt="삭제">
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <p th:if="${#lists.isEmpty(list)}">결과가 없습니다.</p>
+        </div>
+
+        <div th:if="${msg != null}" class="msg">
+            <p th:text="${msg}">메시지</p>
+        </div>
+
+        <hr>
+        <a href="/test1">전체 리스트</a> |
+        <a href="/test2">점수순 리스트</a> |
+        <a href="/test3">70점이상 리스트</a> |
+        <a href="/test4">이름에 '짱' 포함</a> |
+        <a href="/test6">평균 점수</a>
+        
+        <br><br>
+        <a href="#" onclick="toggleForm(); return false;">학생정보입력</a>
+    </div>
+
+    <div id="insertForm" th:style="${insertFailed == true ? 'display:block' : 'display:none'}">
+        <h3>학생 정보 입력</h3>
+        <form method="post" action="/insert">
+            <p>이름: <input type="text" name="name" required></p>
+            <p>점수: <input type="number" name="score" min="0" max="100" required></p>
+            <button type="submit">저장</button>
+        </form>
+    </div>
+
+</body>
+</html>

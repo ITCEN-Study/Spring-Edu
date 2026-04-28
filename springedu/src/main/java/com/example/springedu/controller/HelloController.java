@@ -5,7 +5,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
-public class HelloController {
+public class
+HelloController {
     @GetMapping("/hello")
     public String hello(Model model) {
         System.out.println("첫번째 스프링 부트 테스트 ~~~@@");
