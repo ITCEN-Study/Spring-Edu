@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: springetcedu
+
+server:
+  port: 8088

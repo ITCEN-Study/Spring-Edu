@@ -1,0 +1,24 @@
+package com.example.security8.entity;
+
+import java.util.Collection;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.User;
+
+/**
+* 사용자의 인증 정보를 나타내는 UserDetails 구현 클래스
+*/
+public class LoginUser extends User {
+	private String displayname;
+	public LoginUser(String username,
+		String password,
+		Collection<? extends GrantedAuthority> authorities,
+					 String displayname) {
+		super(username, password, authorities);
+		this.displayname = displayname;
+	}
+	// 【추가 부분】 displayname의 게터
+	public String getDisplayname() {
+		return displayname;
+	}
+}

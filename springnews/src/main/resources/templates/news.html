@@ -34,9 +34,11 @@
     </script>
 </head>
 <body>
+    <!-- TODO: (8) 모든 응답과 요청은 Thymeleaf 로 구현한다. -->
     <h1>뉴스 게시판</h1>
 
     <div class="search-container">
+        <!-- TODO: 검색 요청 -> 전달된 검색어로 뉴스글 내용 에서 검색하여 결과 출력 (매핑명 : /search) -->
         <form action="/search" method="get">
             <input type="text" name="keyword" placeholder="내용 검색">
             <button type="submit" class="btn btn-blue">검색</button>
@@ -58,7 +60,9 @@
         <tbody>
             <tr th:each="item : ${list}">
                 <td th:text="${item.id}">1</td>
+                <!-- TODO: 뉴스 제목을 선택하여 요청 -> 뉴스 id 로 해당 뉴스 내용 출력 (매핑명 : /one) -->
                 <td><a th:href="@{/one(id=${item.id})}" th:text="${item.title}">제목</a></td>
+                <!-- TODO: 리스트에 출력된 작성자 이름을 클릭하여 요청 -> 작성자가 작성한 뉴스 글만 출력 (매핑명 : /writer) -->
                 <td><a th:href="@{/writer(name=${item.writer})}" th:text="${item.writer}">작성자</a></td>
                 <td th:text="${#temporals.format(item.writedate, 'yyyy-MM-dd')}">2026-05-01</td>
                 <td th:text="${item.cnt}">0</td>
@@ -71,6 +75,7 @@
     </div>
 
     <!-- Insert Form -->
+    <!-- TODO: POST 방식 - 뉴스 작성 (매핑명 : /insert) -->
     <div class="form-container" th:if="${insert}">
         <h3>뉴스 작성</h3>
         <form action="/insert" method="post">
@@ -113,8 +118,10 @@
             </div>
             <div style="text-align: center;">
                 <button type="button" class="btn btn-blue" onclick="cancel()">확인</button>
+                <!-- TODO: 뉴스 수정 (매핑명 : /update) -->
                 <button type="button" id="editBtn" class="btn btn-blue" onclick="editNews()">수정</button>
                 <button type="submit" id="updateBtn" class="btn btn-blue" style="display:none;">저장</button>
+                <!-- TODO: 삭제 버튼을 클릭하여 요청 -> 뉴스 id 로 뉴스 삭제 (매핑명 : /delete) -->
                 <a th:href="@{/delete(id=${news.id})}" class="btn btn-blue">삭제</a>
             </div>
         </form>

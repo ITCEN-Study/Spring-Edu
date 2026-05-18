@@ -1,0 +1,20 @@
+spring :
+  application :
+    name : security3
+  security :
+    user:
+      name : unico
+      password : 1234
+      roles : USER
+
+
+logging:
+  level:
+    org:
+      springframework:
+        security : TRACE
+
+server:
+  port: 8088
+
+

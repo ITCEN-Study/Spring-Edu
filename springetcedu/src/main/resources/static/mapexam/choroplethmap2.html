@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>서울 25개 구 실제 경계 단계구분도</title>
+
+    <!-- Leaflet -->
+    <link
+            rel="stylesheet"
+            href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: "Malgun Gothic", "맑은 고딕", sans-serif;
+            background: #f7f8fa;
+        }
+
+        .wrap {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            margin: 0 0 12px;
+            font-size: 28px;
+            color: #222;
+        }
+
+        .desc {
+            margin-bottom: 16px;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        #map {
+            width: 100%;
+            height: 760px;
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid #ddd;
+            box-shadow: 0 8px 24px rgba(0,0,0,.08);
+            background: #fff;
+        }
+
+        .info, .legend {
+            background: rgba(255,255,255,0.95);
+            padding: 10px 12px;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.15);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .info h4 {
+            margin: 0 0 6px;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .legend i {
+            width: 18px;
+            height: 18px;
+            float: left;
+            margin-right: 8px;
+            opacity: 0.85;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <h1>서울 25개 구 실제 경계 단계구분도</h1>
+    <div class="desc">
+        서울 열린데이터/행안부 경계 GeoJSON 기준으로 구별 실제 경계를 반영한 단계구분도 예제입니다.
+    </div>
+    <div id="map"></div>
+</div>
+
+<script>
+    /****************************************************************
+     * 1. 구별 지표 데이터 (예시)
+     ****************************************************************/
+    const districtData = {
+        "강남구": 95, "강동구": 68, "강북구": 34, "강서구": 72, "관악구": 58,
+        "광진구": 55, "구로구": 49, "금천구": 42, "노원구": 51, "도봉구": 37,
+        "동대문구": 47, "동작구": 61, "마포구": 76, "서대문구": 57, "서초구": 88,
+        "성동구": 63, "성북구": 53, "송파구": 81, "양천구": 59, "영등포구": 70,
+        "용산구": 60, "은평구": 46, "종로구": 40, "중구": 39, "중랑구": 44
+    };
+
+    /****************************************************************
+     * 2. 지도 초기화
+     ****************************************************************/
+    const map = L.map("map").setView([37.5665, 126.9780], 11);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "&copy; OpenStreetMap contributors"
+    }).addTo(map);
+
+    /****************************************************************
+     * 3. 단계별 색상
+     ****************************************************************/
+    function getColor(d) {
+        return d > 85 ? "#7f0000" :
+            d > 75 ? "#b30000" :
+                d > 65 ? "#d7301f" :
+                    d > 55 ? "#ef6548" :
+                        d > 45 ? "#fc8d59" :
+                            d > 35 ? "#fdbb84" :
+                                "#fdd49e";
+    }
+
+    function style(feature) {
+        const name = feature.properties.SIG_KOR_NM || feature.properties.name;
+        const value = districtData[name] || 0;
+
+        return {
+            fillColor: getColor(value),
+            weight: 2,
+            opacity: 1,
+            color: "#ffffff",
+            dashArray: "2",
+            fillOpacity: 0.82
+        };
+    }
+
+    /****************************************************************
+     * 4. Info 패널
+     ****************************************************************/
+    const info = L.control();
+
+    info.onAdd = function () {
+        this._div = L.DomUtil.create("div", "info");
+        this.update();
+        return this._div;
+    };
+
+    info.update = function (props) {
+        if (!props) {
+            this._div.innerHTML = "<h4>서울 구별 지표</h4>구역에 마우스를 올려보세요";
+            return;
+        }
+
+        const name = props.SIG_KOR_NM || props.name;
+        this._div.innerHTML = `
+        <h4>서울 구별 지표</h4>
+        <b>${name}</b><br/>
+        지표값: ${districtData[name] ?? 0}
+      `;
+    };
+
+    info.addTo(map);
+
+    /****************************************************************
+     * 5. 인터랙션
+     ****************************************************************/
+    let geojsonLayer;
+
+    function highlightFeature(e) {
+        const layer = e.target;
+
+        layer.setStyle({
+            weight: 3,
+            color: "#333",
+            dashArray: "",
+            fillOpacity: 0.95
+        });
+
+        layer.bringToFront();
+        info.update(layer.feature.properties);
+    }
+
+    function resetHighlight(e) {
+        geojsonLayer.resetStyle(e.target);
+        info.update();
+    }
+
+    function zoomToFeature(e) {
+        map.fitBounds(e.target.getBounds(), { padding: [20, 20] });
+    }
+
+    function onEachFeature(feature, layer) {
+        const name = feature.properties.SIG_KOR_NM || feature.properties.name;
+        const value = districtData[name] || 0;
+
+        layer.bindPopup(`
+        <b>${name}</b><br/>
+        지표값: <b>${value}</b>
+      `);
+
+        layer.on({
+            mouseover: highlightFeature,
+            mouseout: resetHighlight,
+            click: zoomToFeature
+        });
+    }
+
+    /****************************************************************
+     * 6. 실제 서울 구 경계 GeoJSON 로드
+     *
+     * 아래 파일을 같은 폴더에 두면 바로 실행됩니다.
+     * 파일명: seoul_sig.geojson
+     *
+     * ※ 권장 데이터:
+     * - 서울 열린데이터 광역/기초 행정구역 경계
+     * - 행정안전부 SIG GeoJSON
+     ****************************************************************/
+    fetch("./seoul_sig.geojson")
+        .then(res => res.json())
+        .then(data => {
+            geojsonLayer = L.geoJSON(data, {
+                style,
+                onEachFeature
+            }).addTo(map);
+
+            map.fitBounds(geojsonLayer.getBounds());
+        })
+        .catch(err => {
+            console.error("GeoJSON 로드 실패:", err);
+            alert("seoul_sig.geojson 파일을 같은 폴더에 두어야 합니다.");
+        });
+
+    /****************************************************************
+     * 7. 범례
+     ****************************************************************/
+    const legend = L.control({ position: "bottomright" });
+
+    legend.onAdd = function () {
+        const div = L.DomUtil.create("div", "legend");
+        const grades = [0, 35, 45, 55, 65, 75, 85];
+
+        for (let i = 0; i < grades.length; i++) {
+            div.innerHTML +=
+                `<i style="background:${getColor(grades[i] + 1)}"></i> ` +
+                grades[i] + (grades[i + 1] ? "&ndash;" + grades[i + 1] + "<br>" : "+");
+        }
+
+        return div;
+    };
+
+    legend.addTo(map);
+</script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Gradle Imported" enabled="true">
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.projectlombok/lombok/1.18.46/a5cfe99fdf320e84955ef653f2ce1bf789d11385/lombok-1.18.46.jar" />
+        </processorPath>
+        <module name="security7.main" />
+      </profile>
+    </annotationProcessing>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="security1" options="-parameters" />
+      <module name="security1.main" options="-parameters" />
+      <module name="security1.test" options="-parameters" />
+      <module name="security2" options="-parameters" />
+      <module name="security2.main" options="-parameters" />
+      <module name="security2.test" options="-parameters" />
+      <module name="security3" options="-parameters" />
+      <module name="security3.main" options="-parameters" />
+      <module name="security3.test" options="-parameters" />
+      <module name="security4" options="-parameters" />
+      <module name="security4.main" options="-parameters" />
+      <module name="security4.test" options="-parameters" />
+      <module name="security5" options="-parameters" />
+      <module name="security5.main" options="-parameters" />
+      <module name="security5.test" options="-parameters" />
+      <module name="security6" options="-parameters" />
+      <module name="security6.main" options="-parameters" />
+      <module name="security6.test" options="-parameters" />
+      <module name="security7" options="-parameters" />
+      <module name="security7.main" options="-parameters" />
+      <module name="security7.test" options="-parameters" />
+    </option>
+  </component>
+</project>

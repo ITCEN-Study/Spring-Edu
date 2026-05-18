@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>서울 25개 구 단계구분도 (실행형)</title>
+
+    <!-- Leaflet -->
+    <link
+            rel="stylesheet"
+            href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+            integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+            crossorigin=""
+    />
+    <script
+            src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""
+    ></script>
+
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: "Malgun Gothic", "맑은 고딕", sans-serif;
+            background: #f8f9fb;
+        }
+
+        .wrap {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            margin: 0 0 14px;
+            font-size: 28px;
+            color: #222;
+        }
+
+        .desc {
+            margin-bottom: 16px;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        #map {
+            width: 100%;
+            height: 760px;
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid #dcdfe6;
+            box-shadow: 0 8px 24px rgba(0,0,0,.08);
+            background: #fff;
+        }
+
+        .info {
+            padding: 10px 12px;
+            background: rgba(255,255,255,0.95);
+            border-radius: 10px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .info h4 {
+            margin: 0 0 6px;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .legend {
+            line-height: 18px;
+            color: #333;
+            background: rgba(255,255,255,0.95);
+            padding: 12px;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+            font-size: 13px;
+        }
+
+        .legend i {
+            width: 18px;
+            height: 18px;
+            float: left;
+            margin-right: 8px;
+            opacity: 0.85;
+            border-radius: 3px;
+        }
+
+        .leaflet-popup-content {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <h1>서울 25개 구 단계구분도</h1>
+    <div class="desc">
+        서울 25개 자치구를 GeoJSON(실제 좌표) 기반으로 표시한 단계구분도 예제입니다.
+        각 구의 값(예: 매출/인구/지표)에 따라 색상이 달라집니다.
+    </div>
+    <div id="map"></div>
+</div>
+
+<script>
+    /****************************************************************
+     * 1. 서울 25개 구 샘플 지표 데이터
+     ****************************************************************/
+    const districtData = {
+        "강남구": 95, "강동구": 68, "강북구": 34, "강서구": 72, "관악구": 58,
+        "광진구": 55, "구로구": 49, "금천구": 42, "노원구": 51, "도봉구": 37,
+        "동대문구": 47, "동작구": 61, "마포구": 76, "서대문구": 57, "서초구": 88,
+        "성동구": 63, "성북구": 53, "송파구": 81, "양천구": 59, "영등포구": 70,
+        "용산구": 60, "은평구": 46, "종로구": 40, "중구": 39, "중랑구": 44
+    };
+
+    /****************************************************************
+     * 2. 서울 25개 구 중심좌표 (실제 행정구 중심 기준)
+     *    - 데모용으로 각 구를 "육각형 폴리곤"으로 생성
+     *    - 실제 서비스에서는 정부/서울 열린데이터 GeoJSON 교체 가능
+     ****************************************************************/
+    const districtCenters = [
+        { name: "종로구", lat: 37.5730, lng: 126.9794 },
+        { name: "중구", lat: 37.5636, lng: 126.9970 },
+        { name: "용산구", lat: 37.5325, lng: 126.9900 },
+        { name: "성동구", lat: 37.5634, lng: 127.0369 },
+        { name: "광진구", lat: 37.5384, lng: 127.0822 },
+        { name: "동대문구", lat: 37.5744, lng: 127.0396 },
+        { name: "중랑구", lat: 37.6063, lng: 127.0927 },
+        { name: "성북구", lat: 37.5894, lng: 127.0167 },
+        { name: "강북구", lat: 37.6396, lng: 127.0257 },
+        { name: "도봉구", lat: 37.6688, lng: 127.0471 },
+        { name: "노원구", lat: 37.6542, lng: 127.0568 },
+        { name: "은평구", lat: 37.6176, lng: 126.9227 },
+        { name: "서대문구", lat: 37.5792, lng: 126.9368 },
+        { name: "마포구", lat: 37.5663, lng: 126.9019 },
+        { name: "양천구", lat: 37.5169, lng: 126.8664 },
+        { name: "강서구", lat: 37.5509, lng: 126.8495 },
+        { name: "구로구", lat: 37.4954, lng: 126.8874 },
+        { name: "금천구", lat: 37.4569, lng: 126.8955 },
+        { name: "영등포구", lat: 37.5264, lng: 126.8962 },
+        { name: "동작구", lat: 37.5124, lng: 126.9393 },
+        { name: "관악구", lat: 37.4782, lng: 126.9515 },
+        { name: "서초구", lat: 37.4837, lng: 127.0324 },
+        { name: "강남구", lat: 37.5172, lng: 127.0473 },
+        { name: "송파구", lat: 37.5145, lng: 127.1059 },
+        { name: "강동구", lat: 37.5301, lng: 127.1238 }
+    ];
+
+    /****************************************************************
+     * 3. 중심좌표 기반 육각형 폴리곤 생성 (GeoJSON FeatureCollection)
+     *    ※ 데모용 "실행형 완성본"
+     *    ※ 실제 구 경계와 100% 동일한 폴리곤은 아님
+     ****************************************************************/
+    function createHexagon(lng, lat, radius = 0.018) {
+        const coords = [];
+        for (let i = 0; i < 6; i++) {
+            const angle = (Math.PI / 3) * i;
+            const dx = radius * Math.cos(angle);
+            const dy = radius * Math.sin(angle) * 0.72;
+            coords.push([lng + dx, lat + dy]);
+        }
+        coords.push(coords[0]);
+        return coords;
+    }
+
+    const seoulGeoJson = {
+        type: "FeatureCollection",
+        features: districtCenters.map(d => ({
+            type: "Feature",
+            properties: { name: d.name },
+            geometry: {
+                type: "Polygon",
+                coordinates: [createHexagon(d.lng, d.lat)]
+            }
+        }))
+    };
+
+    /****************************************************************
+     * 4. 지도 초기화
+     ****************************************************************/
+    const map = L.map("map", {
+        zoomControl: true
+    }).setView([37.5665, 126.9780], 11);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "&copy; OpenStreetMap contributors"
+    }).addTo(map);
+
+    /****************************************************************
+     * 5. 단계 색상
+     ****************************************************************/
+    function getColor(d) {
+        return d > 85 ? "#7f0000" :
+            d > 75 ? "#b30000" :
+                d > 65 ? "#d7301f" :
+                    d > 55 ? "#ef6548" :
+                        d > 45 ? "#fc8d59" :
+                            d > 35 ? "#fdbb84" :
+                                "#fdd49e";
+    }
+
+    function style(feature) {
+        const value = districtData[feature.properties.name] || 0;
+        return {
+            fillColor: getColor(value),
+            weight: 1.5,
+            opacity: 1,
+            color: "#ffffff",
+            dashArray: "2",
+            fillOpacity: 0.82
+        };
+    }
+
+    /****************************************************************
+     * 6. Hover 정보 패널
+     ****************************************************************/
+    const info = L.control();
+
+    info.onAdd = function () {
+        this._div = L.DomUtil.create("div", "info");
+        this.update();
+        return this._div;
+    };
+
+    info.update = function (props) {
+        this._div.innerHTML =
+            "<h4>서울 구별 지표</h4>" +
+            (props
+                ? `<b>${props.name}</b><br/>지표값: ${districtData[props.name] ?? 0}`
+                : "구역에 마우스를 올려보세요");
+    };
+
+    info.addTo(map);
+
+    /****************************************************************
+     * 7. 인터랙션
+     ****************************************************************/
+    let geojsonLayer;
+
+    function highlightFeature(e) {
+        const layer = e.target;
+
+        layer.setStyle({
+            weight: 3,
+            color: "#333",
+            dashArray: "",
+            fillOpacity: 0.95
+        });
+
+        layer.bringToFront();
+        info.update(layer.feature.properties);
+    }
+
+    function resetHighlight(e) {
+        geojsonLayer.resetStyle(e.target);
+        info.update();
+    }
+
+    function zoomToFeature(e) {
+        map.fitBounds(e.target.getBounds(), { padding: [20, 20] });
+    }
+
+    function onEachFeature(feature, layer) {
+        const name = feature.properties.name;
+        const value = districtData[name] || 0;
+
+        layer.bindPopup(`
+        <b>${name}</b><br/>
+        지표값: <b>${value}</b>
+      `);
+
+        layer.on({
+            mouseover: highlightFeature,
+            mouseout: resetHighlight,
+            click: zoomToFeature
+        });
+    }
+
+    geojsonLayer = L.geoJSON(seoulGeoJson, {
+        style,
+        onEachFeature
+    }).addTo(map);
+
+    /****************************************************************
+     * 8. 범례
+     ****************************************************************/
+    const legend = L.control({ position: "bottomright" });
+
+    legend.onAdd = function () {
+        const div = L.DomUtil.create("div", "legend");
+        const grades = [0, 35, 45, 55, 65, 75, 85];
+
+        for (let i = 0; i < grades.length; i++) {
+            div.innerHTML +=
+                `<i style="background:${getColor(grades[i] + 1)}"></i> ` +
+                grades[i] + (grades[i + 1] ? "&ndash;" + grades[i + 1] + "<br>" : "+");
+        }
+
+        return div;
+    };
+
+    legend.addTo(map);
+</script>
+</body>
+</html>

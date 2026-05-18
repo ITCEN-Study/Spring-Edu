@@ -1,0 +1,11 @@
+spring :
+  application :
+    name : security4
+  security :
+   user:
+     name : unico
+     password : 1234
+     roles : USER
+
+server:
+  port: 8088
