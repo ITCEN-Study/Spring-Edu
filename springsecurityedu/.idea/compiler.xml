@@ -5,9 +5,10 @@
       <profile name="Gradle Imported" enabled="true">
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
+          <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-configuration-processor/4.0.6/85a814e8afbc6c5a6637489760028688bb77860/spring-boot-configuration-processor-4.0.6.jar" />
           <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.projectlombok/lombok/1.18.46/a5cfe99fdf320e84955ef653f2ce1bf789d11385/lombok-1.18.46.jar" />
         </processorPath>
-        <module name="security7.main" />
+        <module name="security12.main" />
       </profile>
     </annotationProcessing>
   </component>
@@ -16,6 +17,15 @@
       <module name="security1" options="-parameters" />
       <module name="security1.main" options="-parameters" />
       <module name="security1.test" options="-parameters" />
+      <module name="security10" options="-parameters" />
+      <module name="security10.main" options="-parameters" />
+      <module name="security10.test" options="-parameters" />
+      <module name="security11" options="-parameters" />
+      <module name="security11.main" options="-parameters" />
+      <module name="security11.test" options="-parameters" />
+      <module name="security12" options="-parameters" />
+      <module name="security12.main" options="-parameters" />
+      <module name="security12.test" options="-parameters" />
       <module name="security2" options="-parameters" />
       <module name="security2.main" options="-parameters" />
       <module name="security2.test" options="-parameters" />

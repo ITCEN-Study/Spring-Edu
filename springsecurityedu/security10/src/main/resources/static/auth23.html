@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<style>
+     input[type="submit"] {
+          margin-top : 5px;
+     }
+</style>
+</head>
+<body>
+<h1>JWT 기반 로그인 기능 테스트</h1>
+<hr>
+<div id="loginarea">
+    <form>
+       계정 <input id="un" type="text"  placeholder="계정입력"><br>
+       암호 <input id="pw" type="password"  placeholder="패스워드입력"><br>
+       <input type="submit" value="로그인" onclick="requestToken(); return false;"><br>
+    </form>
+</div>
+<hr>
+<div id="checkarea">
+    <button onclick="readToken();">JWT 읽어보기</button>
+    <button onclick="checkToken();">로그인 상태 확인</button>
+</div>
+<script>
+    function readToken() {
+        alert(localStorage.getItem('jwtToken'));
+    }
+
+    async function requestToken() {
+        try {
+            const res = await fetch('/auth2', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username: document.getElementById('un').value,
+                    password: document.getElementById('pw').value
+                })
+            });
+
+            if (!res.ok) {
+                console.error('요청 오류:', res.status);
+                return;
+            }
+
+            // 'Authorization' 헤더에서 JWT 토큰 추출
+            let jwtToken = res.headers.get('Authorization');
+            if (jwtToken) {
+                // Bearer 접두어 제거
+                jwtToken = jwtToken.replace(/^Bearer\s+/i, '');
+                localStorage.setItem('jwtToken', jwtToken);
+                console.log('JWT 토큰 저장 완료:', jwtToken);
+                document.getElementById('un').value = '';
+                document.getElementById('pw').value = '';
+                alert('로그인 성공');
+            } else {
+                console.error('JWT 토큰이 응답 헤더에 없습니다.');
+            }
+        } catch (error) {
+            console.error('요청 오류:', error);
+        }
+    }
+
+    async function checkToken() {
+        try {
+            const token = localStorage.getItem('jwtToken');
+
+            const res = await fetch('/auth3', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token && { 'Authorization': 'Bearer ' + token })
+                }
+            });
+            const response = await res.text();
+            console.log('서버 응답:', response);
+            alert(response);
+        } catch (error) {
+            console.error('에러:', error);
+        }
+    }
+</script>
+</body>
+</html>
